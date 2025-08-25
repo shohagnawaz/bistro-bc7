@@ -1,10 +1,41 @@
+import { useContext, useEffect, useRef, useState } from 'react';
+import { loadCaptchaEnginge, LoadCanvasTemplate, validateCaptcha 
+} from 'react-simple-captcha';
+import { AuthContext } from '../../providers/AuthProvider';
+import { Link } from 'react-router-dom';
+
 const Login = () => {
+
+    const captchaRef = useRef(null);
+    const [disabled, setDisabled] = useState(true);
+
+    const { signIn } = useContext(AuthContext)
+
+    useEffect(() => {
+      loadCaptchaEnginge(6);
+    },[]);
+
     const handleLogin = event => {
         event.preventDefault();
         const form = event.target;
         const email = form.email.value;
         const password = form.password.value;
         console.log(email, password);
+        signIn(email, password)
+          .then(result => {
+            const user = result.user;
+            console.log(user)
+          })
+    }
+
+    const handleValidateCaptcha = () => {
+        const user_captcha_value = captchaRef.current.value;
+        if(validateCaptcha(user_captcha_value)) {
+          setDisabled(false);
+        }
+        else{
+          setDisabled(true);
+        }
     }
     
   return (
@@ -25,12 +56,15 @@ const Login = () => {
               <input type="email" name="email" className="input" placeholder="Email" />
               <label className="label">Password</label>
               <input type="password" name="password" className="input" placeholder="Password" />
-              <div>
-                <a className="link link-hover">Forgot password?</a>
-              </div>
-              <input className="btn btn-neutral mt-4" type="submit" value="Login" />
+              <label className="label">
+                <LoadCanvasTemplate />
+              </label>
+              <input type="text" ref={captchaRef} name="captcha" className="input" placeholder="type the test above" />
+              <button onClick={handleValidateCaptcha} className="btn btn-outline btn-xm">Validate</button>
+              <input disabled={disabled} className="btn btn-primary mt-4" type="submit" value="Login" />
             </fieldset>
           </form>
+          <p><small>New Here? <Link to="/signup">Create an account</Link></small></p>
         </div>
       </div>
     </div>
